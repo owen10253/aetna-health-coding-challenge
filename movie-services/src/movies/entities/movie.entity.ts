@@ -4,37 +4,37 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 export class Movie {
   @PrimaryGeneratedColumn()
   movieId: number;
-  
+
   @Column()
   imdbId: string;
-  
+
   @Column()
   title: string;
-  
+
   @Column({ nullable: true })
   overview?: string;
-  
+
   @Column({ nullable: true })
   productionCompanies?: string;
-  
+
   @Column({ nullable: true })
   releaseDate?: string;
-  
+
   @Column({ nullable: true })
   budget?: number;
-  
+
   @Column({ nullable: true })
   revenue?: number;
-  
+
   @Column({ nullable: true })
   runtime?: number;
-  
+
   @Column({ nullable: true })
   language?: string;
-  
+
   @Column({ nullable: true })
   genres?: string;
-  
+
   @Column({ nullable: true })
   status?: string;
 
