@@ -5,7 +5,6 @@ import path from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MoviesModule } from './movies/movies.module';
-import { RatingsModule } from './ratings/ratings.module';
 
 import { Movie } from './movies/entities/movie.entity';
 import { Rating } from './movies/entities/rating.entity';
@@ -34,7 +33,6 @@ const SafeTypeOrmModule = TypeOrmModule as unknown as {
       synchronize: false,
     }),
     MoviesModule,
-    RatingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
