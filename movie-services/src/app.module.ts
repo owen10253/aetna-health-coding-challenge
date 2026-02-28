@@ -1,11 +1,41 @@
-import { Module } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import path from 'path';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MoviesModule } from './movies/movies.module';
 import { RatingsModule } from './ratings/ratings.module';
 
+import { Movie } from './movies/entities/movie.entity';
+import { Rating } from './movies/entities/rating.entity';
+
+const SafeTypeOrmModule = TypeOrmModule as unknown as {
+  forRoot: (options: TypeOrmModuleOptions) => DynamicModule;
+  forFeature: (entities: any[], connectionName?: string) => DynamicModule;
+};
+
 @Module({
-  imports: [MoviesModule, RatingsModule],
+  imports: [
+    // Movies database connection
+    SafeTypeOrmModule.forRoot({
+      name: 'moviesConnection',
+      type: 'sqlite',
+      database: path.resolve(process.cwd(), '../db/movies.db'),
+      entities: [Movie],
+      synchronize: false,
+    }),
+    // Ratings database connection
+    SafeTypeOrmModule.forRoot({
+      name: 'ratingsConnection',
+      type: 'sqlite',
+      database: path.resolve(process.cwd(), '../db/ratings.db'),
+      entities: [Rating],
+      synchronize: false,
+    }),
+    MoviesModule,
+    RatingsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
