@@ -14,9 +14,23 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+  describe('health', () => {
+    it('should return health status object', () => {
+      const result = appController.getHealth();
+      expect(result).toHaveProperty('status', 'OK');
+      expect(result).toHaveProperty('timestamp');
+      expect(result).toHaveProperty('uptime');
+      expect(result).toHaveProperty('service', 'movie-services');
+    });
+
+    it('should return valid timestamp format', () => {
+      const result = appController.getHealth() as any;
+      expect(new Date(result.timestamp).getTime()).toBeGreaterThan(0);
+    });
+
+    it('should return positive uptime', () => {
+      const result = appController.getHealth() as any;
+      expect(result.uptime).toBeGreaterThanOrEqual(0);
     });
   });
 });
