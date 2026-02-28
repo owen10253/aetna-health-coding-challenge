@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
+import { Controller, Get, Query, Param, Logger } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 
 import { MovieDetail } from './Interfaces/movie.detail.interface';
@@ -14,6 +14,8 @@ interface PaginatedResponse<T> {
 
 @Controller('movies')
 export class MoviesController {
+  private readonly logger = new Logger(MoviesController.name);
+
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
@@ -21,7 +23,16 @@ export class MoviesController {
     @Query('page') page: string = '1',
   ): Promise<PaginatedResponse<MovieListItem>> {
     const pageNum = parseInt(page) || 1;
-    return this.moviesService.findAll(pageNum);
+    this.logger.log(`Fetching movies - page: ${pageNum}`);
+
+    const result = await this.moviesService.findAll(pageNum);
+    this.logger.debug(`Movies fetched successfully`, {
+      page: pageNum,
+      totalResults: result.total,
+      itemsReturned: result.data.length,
+    });
+
+    return result;
   }
 
   @Get('year/:year')
@@ -34,7 +45,24 @@ export class MoviesController {
     const yearNum = parseInt(year);
     const sortOrder = sort.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
-    return this.moviesService.findByYear(yearNum, pageNum, sortOrder);
+    this.logger.log(`Fetching movies by year`, {
+      year: yearNum,
+      page: pageNum,
+      sort: sortOrder,
+    });
+
+    const result = await this.moviesService.findByYear(
+      yearNum,
+      pageNum,
+      sortOrder,
+    );
+    this.logger.debug(`Movies by year fetched successfully`, {
+      year: yearNum,
+      totalResults: result.total,
+      itemsReturned: result.data.length,
+    });
+
+    return result;
   }
 
   @Get('genre/:genre')
@@ -43,11 +71,36 @@ export class MoviesController {
     @Query('page') page: string = '1',
   ): Promise<PaginatedResponse<MovieListItem>> {
     const pageNum = parseInt(page) || 1;
-    return this.moviesService.findByGenre(genre, pageNum);
+    this.logger.log(`Fetching movies by genre`, {
+      genre,
+      page: pageNum,
+    });
+
+    const result = await this.moviesService.findByGenre(genre, pageNum);
+    this.logger.debug(`Movies by genre fetched successfully`, {
+      genre,
+      totalResults: result.total,
+      itemsReturned: result.data.length,
+    });
+
+    return result;
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<MovieDetail | null> {
-    return this.moviesService.findDetailById(id);
+    this.logger.log(`Fetching movie details`, { imdbId: id });
+
+    const result = await this.moviesService.findDetailById(id);
+
+    if (result) {
+      this.logger.debug(`Movie details fetched successfully`, {
+        imdbId: id,
+        title: result.title,
+      });
+    } else {
+      this.logger.warn(`Movie not found`, { imdbId: id });
+    }
+
+    return result;
   }
 }

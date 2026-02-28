@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Movie } from './entities/movie.entity';
@@ -17,6 +17,8 @@ interface PaginatedResponse<T> {
 
 @Injectable()
 export class MoviesService {
+  private readonly logger = new Logger(MoviesService.name);
+
   constructor(
     @InjectRepository(Movie, 'moviesConnection')
     private movieRepository: Repository<Movie>,
@@ -29,15 +31,28 @@ export class MoviesService {
     const pageNum = Math.max(1, page);
     const offset = (pageNum - 1) * limit;
 
+    this.logger.debug(`Starting findAll query`, {
+      page: pageNum,
+      limit,
+      offset,
+    });
+
     try {
       // Get total count
       const total = await this.movieRepository.count();
+      this.logger.debug(`Total movie count: ${total}`);
 
       // Get paginated movies
       const movies = await this.movieRepository.find({
         order: { releaseDate: 'ASC' },
         skip: offset,
         take: limit,
+      });
+
+      this.logger.log(`Successfully fetched ${movies.length} movies`, {
+        page: pageNum,
+        limit,
+        total,
       });
 
       const movieListItems: MovieListItem[] = movies.map((movie) => ({
@@ -60,7 +75,10 @@ export class MoviesService {
         totalPages,
       };
     } catch (error) {
-      console.error('Error fetching movies:', error);
+      this.logger.error('Error fetching movies', error, {
+        page: pageNum,
+        limit,
+      });
       return {
         data: [],
         page: pageNum,
@@ -72,12 +90,22 @@ export class MoviesService {
   }
 
   async findById(id: string): Promise<MovieListItem | null> {
+    this.logger.debug(`Finding movie by ID`, { imdbId: id });
+
     try {
       const movie = await this.movieRepository.findOne({
         where: { imdbId: id },
       });
 
-      if (!movie) return null;
+      if (!movie) {
+        this.logger.warn(`Movie not found`, { imdbId: id });
+        return null;
+      }
+
+      this.logger.log(`Movie found successfully`, {
+        imdbId: id,
+        title: movie.title,
+      });
 
       return {
         imdbId: movie.imdbId,
@@ -89,19 +117,29 @@ export class MoviesService {
         budget: this.formatBudget(movie.budget),
       };
     } catch (error) {
-      console.error('Error fetching movie by ID:', error);
+      this.logger.error('Error fetching movie by ID', error, { imdbId: id });
       return null;
     }
   }
 
   async findDetailById(id: string): Promise<MovieDetail | null> {
+    this.logger.debug(`Finding movie details by ID`, { imdbId: id });
+
     try {
       // Get movie details from movies database
       const movie = await this.movieRepository.findOne({
         where: { imdbId: id },
       });
 
-      if (!movie) return null;
+      if (!movie) {
+        this.logger.warn(`Movie not found for details`, { imdbId: id });
+        return null;
+      }
+
+      this.logger.debug(`Movie found, fetching ratings`, {
+        imdbId: id,
+        movieId: movie.movieId,
+      });
 
       // Get average rating from ratings database using TypeORM
       let averageRating = 0;
@@ -114,11 +152,18 @@ export class MoviesService {
             .getRawOne();
 
         averageRating = Number(result?.averageRating ?? 0);
+        this.logger.debug(`Rating calculation completed`, {
+          imdbId: id,
+          averageRating,
+        });
       } catch (ratingError) {
-        console.error('Error fetching ratings:', ratingError);
+        this.logger.error('Error fetching ratings', ratingError, {
+          imdbId: id,
+          movieId: movie.movieId,
+        });
       }
 
-      return {
+      const movieDetail: MovieDetail = {
         imdbId: movie.imdbId,
         title: movie.title,
         description: movie.overview || '',
@@ -134,8 +179,16 @@ export class MoviesService {
           ? movie.productionCompanies.split(',').map((c) => c.trim())
           : [],
       };
+
+      this.logger.log(`Movie details fetched successfully`, {
+        imdbId: id,
+        title: movie.title,
+        averageRating,
+      });
+
+      return movieDetail;
     } catch (error) {
-      console.error('Error fetching movie details:', error);
+      this.logger.error('Error fetching movie details', error, { imdbId: id });
       return null;
     }
   }
@@ -149,6 +202,14 @@ export class MoviesService {
     const pageNum = Math.max(1, page);
     const offset = (pageNum - 1) * limit;
 
+    this.logger.debug(`Finding movies by year`, {
+      year,
+      page: pageNum,
+      sortOrder,
+      limit,
+      offset,
+    });
+
     try {
       // Create query builder for year filtering
       const queryBuilder = this.movieRepository
@@ -159,6 +220,7 @@ export class MoviesService {
 
       // Get total count for pagination
       const total = await queryBuilder.getCount();
+      this.logger.debug(`Total movies found for year ${year}: ${total}`);
 
       // Get paginated movies with sorting
       const movies = await queryBuilder
@@ -166,6 +228,16 @@ export class MoviesService {
         .skip(offset)
         .take(limit)
         .getMany();
+
+      this.logger.log(
+        `Successfully fetched ${movies.length} movies for year ${year}`,
+        {
+          year,
+          page: pageNum,
+          total,
+          sortOrder,
+        },
+      );
 
       const movieListItems: MovieListItem[] = movies.map((movie) => ({
         imdbId: movie.imdbId,
@@ -187,7 +259,11 @@ export class MoviesService {
         totalPages,
       };
     } catch (error) {
-      console.error(`Error fetching movies for year ${year}:`, error);
+      this.logger.error(`Error fetching movies for year ${year}`, error, {
+        year,
+        page: pageNum,
+        sortOrder,
+      });
       return {
         data: [],
         page: pageNum,
@@ -206,6 +282,13 @@ export class MoviesService {
     const pageNum = Math.max(1, page);
     const offset = (pageNum - 1) * limit;
 
+    this.logger.debug(`Finding movies by genre`, {
+      genre,
+      page: pageNum,
+      limit,
+      offset,
+    });
+
     try {
       // Create query builder for genre filtering
       // Use LIKE to match genres in comma-separated string
@@ -215,6 +298,7 @@ export class MoviesService {
 
       // Get total count for pagination
       const total = await queryBuilder.getCount();
+      this.logger.debug(`Total movies found for genre '${genre}': ${total}`);
 
       // Get paginated movies
       const movies = await queryBuilder
@@ -222,6 +306,15 @@ export class MoviesService {
         .skip(offset)
         .take(limit)
         .getMany();
+
+      this.logger.log(
+        `Successfully fetched ${movies.length} movies for genre '${genre}'`,
+        {
+          genre,
+          page: pageNum,
+          total,
+        },
+      );
 
       const movieListItems: MovieListItem[] = movies.map((movie) => ({
         imdbId: movie.imdbId,
@@ -243,7 +336,10 @@ export class MoviesService {
         totalPages,
       };
     } catch (error) {
-      console.error(`Error fetching movies for genre '${genre}':`, error);
+      this.logger.error(`Error fetching movies for genre '${genre}'`, error, {
+        genre,
+        page: pageNum,
+      });
       return {
         data: [],
         page: pageNum,

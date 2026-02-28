@@ -1,5 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { LoggerModule } from 'nestjs-pino';
 import path from 'path';
 
 import { AppController } from './app.controller';
@@ -16,6 +17,18 @@ const SafeTypeOrmModule = TypeOrmModule as unknown as {
 
 @Module({
   imports: [
+    // Pino Logger configuration
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            singleLine: true,
+            colorize: true,
+          },
+        },
+      },
+    }),
     // Movies database connection
     SafeTypeOrmModule.forRoot({
       name: 'moviesConnection',
