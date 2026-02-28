@@ -18,13 +18,11 @@ export class Rating {
   timestamp: number;
 
   constructor(data?: Partial<Rating>) {
-    if (data) {
-      this.ratingId = data.ratingId || 0;
-      this.userId = data.userId || 0;
-      this.movieId = data.movieId || 0;
-      this.rating = data.rating || 0;
-      this.timestamp = data.timestamp || 0;
-    }
+    this.ratingId = data?.ratingId || 0;
+    this.userId = data?.userId || 0;
+    this.movieId = data?.movieId || 0;
+    this.rating = data?.rating || 0;
+    this.timestamp = data?.timestamp || 0;
   }
 
   // Helper methods

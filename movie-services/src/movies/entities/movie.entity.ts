@@ -38,11 +38,11 @@ export class Movie {
   @Column({ nullable: true })
   status?: string;
 
-  constructor(data?: Partial<Movie>) {
+  constructor(data?: Movie) {
+    this.movieId = data?.movieId || 0;
+    this.imdbId = data?.imdbId || '';
+    this.title = data?.title || '';
     if (data) {
-      this.movieId = data.movieId || 0;
-      this.imdbId = data.imdbId || '';
-      this.title = data.title || '';
       this.overview = data.overview;
       this.productionCompanies = data.productionCompanies;
       this.releaseDate = data.releaseDate;
