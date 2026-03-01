@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param, Logger } from '@nestjs/common';
+import { Controller, Get, Query, Param, Logger, NotFoundException } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 
 import { MovieDetail } from './Interfaces/movie.detail.interface';
@@ -87,19 +87,20 @@ export class MoviesController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<MovieDetail | null> {
+  async findOne(@Param('id') id: string): Promise<MovieDetail> {
     this.logger.log(`Fetching movie details`, { imdbId: id });
 
     const result = await this.moviesService.findDetailById(id);
 
-    if (result) {
-      this.logger.debug(`Movie details fetched successfully`, {
-        imdbId: id,
-        title: result.title,
-      });
-    } else {
+    if (!result) {
       this.logger.warn(`Movie not found`, { imdbId: id });
+      throw new NotFoundException(`Movie with ID ${id} not found`);
     }
+
+    this.logger.debug(`Movie details fetched successfully`, {
+      imdbId: id,
+      title: result.title,
+    });
 
     return result;
   }
