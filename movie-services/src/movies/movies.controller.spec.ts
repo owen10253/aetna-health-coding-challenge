@@ -229,12 +229,13 @@ describe('MoviesController', () => {
       );
     });
 
-    it('should return null for non-existent movie', async () => {
+    it('should throw NotFoundException for non-existent movie', async () => {
       mockMoviesService.findDetailById.mockResolvedValue(null);
 
-      const result = await controller.findOne('tt9999999');
+      await expect(controller.findOne('tt9999999')).rejects.toThrow(
+        'Movie with ID tt9999999 not found',
+      );
 
-      expect(result).toBeNull();
       expect(mockMoviesService.findDetailById).toHaveBeenCalledWith(
         'tt9999999',
       );
