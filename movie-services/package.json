@@ -17,7 +17,15 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "docker:build": "docker build --no-cache -t movie-services:latest .",
+    "docker:build:dev": "docker build --target development -t movie-services:dev .",
+    "docker:run": "docker run -p 3000:3000 movie-services:latest",
+    "docker:run:dev": "docker run -p 3000:3000 -v $(pwd)/src:/app/src movie-services:dev",
+    "docker:up": "docker-compose up",
+    "docker:up:dev": "docker-compose --profile dev up",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

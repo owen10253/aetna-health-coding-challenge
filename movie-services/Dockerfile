@@ -32,6 +32,12 @@ RUN npm ci --only=production && npm cache clean --force
 # Copy built application from build stage
 COPY --from=build /app/dist ./dist
 
+# Copy database files (if needed, adjust paths as necessary)
+COPY --from=build /app/db ./db
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 # Database files are included in the main COPY . . above
 
 # Create non-root user for security
@@ -47,7 +53,7 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+  CMD curl -f http://localhost:3000/movies || exit 1
 
 # Start the application
 CMD ["npm", "run", "start:prod"]

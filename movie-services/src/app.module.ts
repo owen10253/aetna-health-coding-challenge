@@ -33,7 +33,9 @@ const SafeTypeOrmModule = TypeOrmModule as unknown as {
     SafeTypeOrmModule.forRoot({
       name: 'moviesConnection',
       type: 'sqlite',
-      database: path.resolve(process.cwd(), '../db/movies.db'),
+      database: path.resolve(process.cwd(), './db/movies.db')
+        ? path.resolve(process.cwd(), './db/movies.db')
+        : path.resolve(process.cwd(), '../db/movies.db'),
       entities: [Movie],
       synchronize: false,
     }),
@@ -41,7 +43,9 @@ const SafeTypeOrmModule = TypeOrmModule as unknown as {
     SafeTypeOrmModule.forRoot({
       name: 'ratingsConnection',
       type: 'sqlite',
-      database: path.resolve(process.cwd(), '../db/ratings.db'),
+      database: path.resolve(process.cwd(), './db/ratings.db')
+        ? path.resolve(process.cwd(), './db/ratings.db')
+        : path.resolve(process.cwd(), '../db/ratings.db'),
       entities: [Rating],
       synchronize: false,
     }),
