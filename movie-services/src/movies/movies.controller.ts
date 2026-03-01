@@ -1,4 +1,11 @@
-import { Controller, Get, Query, Param, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Param,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { MoviesService } from './movies.service';
 
 import { MovieDetail } from './Interfaces/movie.detail.interface';

@@ -46,7 +46,7 @@ describe('Movie Services API (e2e)', () => {
           expect(res.body).toHaveProperty('total');
           expect(res.body).toHaveProperty('totalPages');
           expect(Array.isArray(res.body.data)).toBe(true);
-          
+
           // Check movie structure if data exists
           if (res.body.data.length > 0) {
             const movie = res.body.data[0];
@@ -126,7 +126,7 @@ describe('Movie Services API (e2e)', () => {
 
       if (moviesResponse.body.data.length > 0) {
         const validId = moviesResponse.body.data[0].imdbId;
-        
+
         if (validId) {
           return request(app.getHttpServer())
             .get(`/movies/${validId}`)
@@ -153,7 +153,9 @@ describe('Movie Services API (e2e)', () => {
         .expect(404)
         .expect((res) => {
           expect(res.body).toHaveProperty('message');
-          expect(res.body.message).toContain('Movie with ID tt9999999 not found');
+          expect(res.body.message).toContain(
+            'Movie with ID tt9999999 not found',
+          );
         });
     });
   });
