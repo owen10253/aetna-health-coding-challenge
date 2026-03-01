@@ -33,33 +33,37 @@ Access the API at: **http://localhost:3000**
 
 ### 🏗️ Development
 - `npm install` - Install dependencies 
+- `npm run start` - Start in standard mode
 - `npm run start:dev` - Development mode with hot reload
-- `npm run start:prod` - Production mode
-- `npm run build` - Build the project
-- `npm run clean` - Clean build artifacts and node_modules
-- `npm run dev` - Alias for start:dev
+- `npm run start:debug` - Debug mode with inspector
+- `npm run start:prod` - Production mode (requires build)
+- `npm run build` - Build the project for production
+- `npm run format` - Format code with Prettier
 
 ### 🧪 Testing  
 - `npm test` - Run unit tests
 - `npm run test:e2e` - Run end-to-end tests
 - `npm run test:cov` - Run tests with coverage
 - `npm run test:watch` - Run tests in watch mode
-- `npm run lint` - Run ESLint
-- `npm run format` - Format code with Prettier
+- `npm run test:debug` - Debug tests with inspector
+- `npm run lint` - Run ESLint with auto-fix
 
 ### 🐳 Docker
 **From movie-services directory:**
-- `docker build -t movie-services .` - Build Docker image
-- `docker run -p 3000:3000 movie-services` - Run container
-- `docker-compose up` - Start with docker-compose (production)
-- `docker-compose -f docker-compose.yml up movie-services-dev` - Development with hot reload
+- `npm run docker:build` - Build optimized production image
+- `npm run docker:build:dev` - Build development image
+- `npm run docker:run` - Run production container
+- `npm run docker:run:dev` - Run development container with volume mounts
+- `npm run docker:up` - Start with docker-compose (production)
+- `npm run docker:up:dev` - Development with hot reload (uses --profile dev)
+- `npm run docker:down` - Stop and remove containers
+- `npm run docker:logs` - View container logs
 
 ### 💾 Database Management
-**Using scripts directory:**
-- `./scripts/db.sh check` - Show database status and tables
-- `./scripts/db.sh backup` - Create timestamped backup  
-- `./scripts/db.sh info` - Database statistics
-- `./scripts/setup.sh` - Project setup and validation
+**Direct SQLite access:**
+- `sqlite3 movie-services/db/movies.db ".tables"` - List tables in movies database
+- `sqlite3 movie-services/db/ratings.db ".schema ratings"` - View ratings schema
+- Database files located in `movie-services/db/` directory
 
 ## 🎯 API Endpoints
 
@@ -117,7 +121,7 @@ Access the API at: **http://localhost:3000**
 ### Backend Framework
 - **NestJS 11.0.1** - Enterprise Node.js framework  
 - **TypeScript 5.7.3** - Type-safe JavaScript
-- **Node.js 20** - Runtime environment
+- **Node.js 20** - Runtime environment (Alpine Linux in Docker)
 
 ### Database & ORM  
 - **TypeORM 0.3.28** - Advanced object-relational mapping
@@ -130,15 +134,17 @@ Access the API at: **http://localhost:3000**
 - **pino-pretty 13.1.3** - Development formatting
 
 ### Testing & Quality
-- **Jest 30.0.0** - Testing framework
-- **ESLint 9.18.0** - Code linting
+- **Jest 30.0.0** - Testing framework with coverage
+- **ts-jest 29.2.5** - TypeScript Jest transformer
+- **ESLint 9.18.0** - Code linting with TypeScript support
 - **Prettier 3.4.2** - Code formatting  
 - **Supertest 7.0.0** - HTTP integration testing
+- **typescript-eslint 8.20.0** - TypeScript ESLint plugin
 
 ### DevOps & Deployment
-- **Docker** - Multi-stage containerization
-- **Docker Compose** - Container orchestration
-- **Health Checks** - Built-in monitoring
+- **Docker** - Multi-stage containerization (Alpine Linux base)
+- **Docker Compose** - Container orchestration with profiles
+- **Health Checks** - Built-in monitoring via HTTP endpoints
 
 ## 📁 Project Structure
 
@@ -150,6 +156,8 @@ aetna-health-coding-challenge/
 │   │   │   ├── movies.controller.ts    # REST endpoints
 │   │   │   ├── movies.service.ts       # Business logic
 │   │   │   ├── movies.module.ts        # Module configuration
+│   │   │   ├── movies.controller.spec.ts # Controller tests
+│   │   │   ├── movies.service.spec.ts   # Service tests
 │   │   │   ├── 📁 entities/            # TypeORM entities
 │   │   │   │   ├── movie.entity.ts     # Movie database model
 │   │   │   │   └── rating.entity.ts    # Rating database model
@@ -158,24 +166,30 @@ aetna-health-coding-challenge/
 │   │   │       └── movie.list.item.interface.ts
 │   │   ├── app.module.ts              # Root application module
 │   │   ├── app.controller.ts          # Root controller
+│   │   ├── app.controller.spec.ts     # Root controller tests
 │   │   ├── app.service.ts             # Root service
 │   │   └── main.ts                    # Application bootstrap
 │   ├── 📁 test/               # End-to-end tests  
+│   │   ├── app.e2e-spec.ts    # E2E test suite
+│   │   └── jest-e2e.json      # E2E Jest configuration
 │   ├── 📁 scripts/            # Build scripts
-│   ├── Dockerfile             # Container configuration
-│   ├── docker-compose.yml     # Multi-container setup
-│   ├── package.json           # Dependencies & scripts
+│   │   └── docker-build.sh    # Docker build script
+│   ├── 📁 db/                 # SQLite databases
+│   │   ├── movies.db          # Movies data 
+│   │   └── ratings.db         # User ratings data
+│   ├── Dockerfile             # Multi-stage container configuration
+│   ├── docker-compose.yml     # Container orchestration setup
+│   ├── package.json           # Dependencies & npm scripts
 │   ├── tsconfig.json          # TypeScript configuration
-│   └── eslint.config.mjs      # ESLint configuration
-├── 📁 db/                     # SQLite databases
-│   ├── movies.db              # Movies data 
-│   └── ratings.db             # User ratings data
-├── 📁 scripts/                # Utility scripts
-│   ├── setup.sh               # Project setup
-│   ├── validate.sh            # Validation checks  
-│   └── db.sh                  # Database management
-├── 📁 movie-services-requirements/  # Original requirements
-└── package.json               # Root workspace configuration
+│   ├── tsconfig.build.json    # Build-specific TypeScript config
+│   ├── eslint.config.mjs      # ESLint configuration
+│   ├── nest-cli.json          # NestJS CLI configuration
+│   └── README.md              # Module documentation
+├── 📁 movie-services-requirements/  # Original requirements & specifications
+│   ├── README.md              # Project requirements document
+│   └── 📁 db/                 # Sample database files
+├── .gitignore                 # Git ignore rules
+└── README.md                  # This file - comprehensive project documentation
 ```
 
 ## ✨ Key Features
@@ -281,25 +295,30 @@ docker run -p 3000:3000 movie-services
 
 ### Using Docker Compose
 ```bash
-# Production (default)
+# Production (default service)
+cd movie-services
 docker-compose up
 
-# Development with hot reload
-docker-compose up movie-services-dev
+# Development with hot reload (uses profile)
+docker-compose --profile dev up
 
 # Background services
 docker-compose up -d
 
 # View logs
 docker-compose logs -f movie-services
+
+# Development with npm script
+npm run docker:up:dev
 ```
 
 ### Multi-Stage Build Benefits
 - **Development Stage** - Full development environment with npm and source code
 - **Build Stage** - Optimized TypeScript compilation  
-- **Production Stage** - Minimal runtime image with only necessary files
+- **Production Stage** - Minimal runtime image (~150MB) with only necessary files
 - **Security** - Non-root user execution
 - **Performance** - Layer caching for faster builds
+- **Health Checks** - Built-in container health monitoring via `/movies` endpoint
 
 ## 💾 Database Architecture
 
@@ -318,18 +337,20 @@ The application uses **dual SQLite databases** for optimal performance:
 
 ### Database Tools
 ```bash
-# Check database status and view tables
-./scripts/db.sh check
+# Direct SQLite database access (requires sqlite3 CLI)
+sqlite3 movie-services/db/movies.db ".tables"
+sqlite3 movie-services/db/movies.db ".schema movies"
+sqlite3 movie-services/db/ratings.db ".tables"  
+sqlite3 movie-services/db/ratings.db ".schema ratings"
 
-# Create timestamped backup 
-./scripts/db.sh backup
+# Interactive database exploration
+sqlite3 movie-services/db/movies.db
+# Then run: SELECT COUNT(*) FROM movies;
+# Or: SELECT * FROM movies LIMIT 5;
 
-# View database statistics and row counts
-./scripts/db.sh info
-
-# Direct SQLite access (requires sqlite3)
-sqlite3 db/movies.db ".tables"
-sqlite3 db/ratings.db ".schema ratings"
+# Check database file information
+ls -la movie-services/db/
+file movie-services/db/*.db
 ```
 
 ### Data Relationships
@@ -434,26 +455,30 @@ docker-compose up -d
 git clone <repository>
 cd aetna-health-coding-challenge
 
-# 2. Install dependencies
+# 2. Navigate to main application
+cd movie-services
+
+# 3. Install dependencies
 npm install
 
-# 3. Start development server  
+# 4. Start development server  
 npm run start:dev
 
-# 4. Run tests
+# 5. Run tests
 npm test
 
-# 5. Check code quality
+# 6. Check code quality
 npm run lint
 npm run format
 ```
 
 ### Development Workflow
 1. **Code changes** - Edit TypeScript files in `src/`
-2. **Hot reload** - Changes automatically restart server
-3. **Test early** - Run unit tests for modified modules  
-4. **Database inspection** - Use `./scripts/db.sh check`
+2. **Hot reload** - Changes automatically restart server in dev mode
+3. **Test early** - Run unit tests for modified modules: `npm test`  
+4. **Database inspection** - Use SQLite CLI or database viewer
 5. **Format code** - Run `npm run format` before commits
+6. **Docker testing** - Test with `npm run docker:build:dev && npm run docker:run:dev`
 
 ### Adding New Features
 1. **Create module** - Use NestJS CLI: `nest generate module feature`
@@ -461,6 +486,42 @@ npm run format
 3. **Define interfaces** - Add TypeScript interfaces  
 4. **Write tests** - Create `.spec.ts` files
 5. **Update README** - Document new endpoints
+
+### Troubleshooting
+
+#### Common Issues
+
+**Port Already in Use**
+```bash
+# Kill process using port 3000
+lsof -ti:3000 | xargs kill -9
+# Or use different port
+PORT=3001 npm run start:dev
+```
+
+**Database Connection Issues**
+```bash
+# Check database files exist
+ls -la movie-services/db/
+# Verify database integrity
+sqlite3 movie-services/db/movies.db "PRAGMA integrity_check;"
+```
+
+**Docker Health Check Fails**
+```bash
+# The health check uses curl which may not be in Alpine
+# Check container health manually:
+docker exec <container_id> wget -qO- http://localhost:3000/movies
+```
+
+**Build Errors**
+```bash
+# Clean build and reinstall
+npm run format && npm run lint
+rm -rf node_modules dist package-lock.json
+npm install
+npm run build
+```
 
 ---
 
